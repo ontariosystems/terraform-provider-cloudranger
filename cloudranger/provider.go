@@ -4,15 +4,15 @@ import (
 	"context"
 	"log"
 
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
-	cr "github.com/jaxi/terraform-provider-cloudranger/client"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	cr "github.com/ontariosystems/terraform-provider-cloudranger/client"
 )
 
-func Provider() terraform.ResourceProvider {
+func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"api_key": &schema.Schema{
+			"api_key": {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("CLOUDRANGER_API_KEY", nil),
@@ -22,11 +22,11 @@ func Provider() terraform.ResourceProvider {
 			"cloudranger_backup_policy": resourceCloudrangerBackupPolicy(),
 			"cloudranger_schedule":      resourceCloudRangerSchedule(),
 		},
-		ConfigureFunc: providerConfigure,
+		ConfigureContextFunc: providerConfigure,
 	}
 }
 
-func providerConfigure(d *schema.ResourceData) (interface{}, error) {
+func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	cfg := cr.NewConfiguration()
 	cfg.AddDefaultHeader("x-api-key", d.Get("api_key").(string))
 	cli := cr.NewAPIClient(cfg)
@@ -36,7 +36,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 
 	if err != nil {
 		log.Printf("[ERROR] Cloudranger Client authorization error: %v", err)
-		return nil, err
+		return nil, diag.FromErr(err)
 	}
 
 	cfg.AddDefaultHeader("Authorization", "Bearer "+token.Token)

@@ -6,82 +6,83 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/hashicorp/terraform/helper/schema"
-	cr "github.com/jaxi/terraform-provider-cloudranger/client"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	cr "github.com/ontariosystems/terraform-provider-cloudranger/client"
 )
 
 func resourceCloudrangerBackupPolicy() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceCloudrangerBackupPolicyCreate,
-		Read:   resourceCloudrangerBackupPolicyRead,
-		Update: resourceCloudrangerBackupPolicyUpdate,
-		Delete: resourceCloudrangerBackupPolicyDelete,
+		CreateContext: resourceCloudrangerBackupPolicyCreate,
+		Read:          resourceCloudrangerBackupPolicyRead,
+		Update:        resourceCloudrangerBackupPolicyUpdate,
+		Delete:        resourceCloudrangerBackupPolicyDelete,
 		// Exists: resourceCloudrangerBackupPolicyExists,
 
 		Schema: map[string]*schema.Schema{
-			"organization_id": &schema.Schema{
+			"organization_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("CLOUDRANGER_ORGANIZATION_ID", nil),
 			},
-			"account_id": &schema.Schema{
+			"account_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("CLOUDRANGER_ACCOUNT_ID", nil),
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"timezone_location": &schema.Schema{
+			"timezone_location": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"backup_source": &schema.Schema{
+			"backup_source": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"backup_target": &schema.Schema{
+			"backup_target": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"create_cron": &schema.Schema{
+			"create_cron": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"retention": &schema.Schema{
+			"retention": {
 				Type:     schema.TypeInt,
 				Required: true,
 			},
-			"active": &schema.Schema{
+			"active": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  true,
 			},
-			"perform_reboot": &schema.Schema{
+			"perform_reboot": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  false,
 			},
-			"match_all_tags": &schema.Schema{
+			"match_all_tags": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  false,
 			},
-			"tags": &schema.Schema{
+			"tags": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key": &schema.Schema{
+						"key": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"value": &schema.Schema{
+						"value": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
@@ -91,19 +92,18 @@ func resourceCloudrangerBackupPolicy() *schema.Resource {
 		},
 	}
 }
-
-func resourceCloudrangerBackupPolicyCreate(d *schema.ResourceData, m interface{}) error {
+func resourceCloudrangerBackupPolicyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	cli := m.(*cr.APIClient)
 
 	policy := buildBackupPolicy(d)
 	createdPolicy, _, err := cli.PoliciesApi.OrganizationsOrganizationIdAccountsAccountIdPoliciesPost(
-		context.Background(),
+		ctx,
 		policy.AccountId,
 		policy.OrganizationId,
 		*policy,
 	)
 	if err != nil {
-		return fmt.Errorf("error creating policy: %s", err.Error())
+		return diag.Errorf("error creating policy: %s", err.Error())
 	}
 
 	log.Printf("[Debug] created policy: %v", createdPolicy)

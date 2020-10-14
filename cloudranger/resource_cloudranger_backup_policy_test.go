@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
-	cr "github.com/jaxi/terraform-provider-cloudranger/client"
+	cr "github.com/ontariosystems/terraform-provider-cloudranger/client"
 )
 
 const testAccCheckCloudrangerBackupPolicyConfig = `

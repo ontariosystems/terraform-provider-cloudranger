@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/hashicorp/terraform/plugin"
-	"github.com/jaxi/terraform-provider-cloudranger/cloudranger"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
+	"github.com/ontariosystems/terraform-provider-cloudranger/cloudranger"
 )
 
 func main() {

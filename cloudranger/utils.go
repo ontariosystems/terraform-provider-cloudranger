@@ -1,8 +1,8 @@
 package cloudranger
 
 import (
-	"github.com/hashicorp/terraform/helper/schema"
-	cr "github.com/jaxi/terraform-provider-cloudranger/client"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	cr "github.com/ontariosystems/terraform-provider-cloudranger/client"
 )
 
 func tagsFrom(d *schema.ResourceData) []cr.Tag {

@@ -8,51 +8,52 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/schema"
-	cr "github.com/jaxi/terraform-provider-cloudranger/client"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	cr "github.com/ontariosystems/terraform-provider-cloudranger/client"
 )
 
 func resourceCloudRangerSchedule() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceCloudrangerScheduleCreate,
-		Read:   resourceCloudrangerScheduleRead,
-		Update: resourceCloudrangerScheduleUpdate,
-		Delete: resourceCloudrangerScheduleDelete,
+		CreateContext: resourceCloudrangerScheduleCreate,
+		Read:          resourceCloudrangerScheduleRead,
+		Update:        resourceCloudrangerScheduleUpdate,
+		Delete:        resourceCloudrangerScheduleDelete,
 
 		Schema: map[string]*schema.Schema{
-			"organization_id": &schema.Schema{
+			"organization_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("CLOUDRANGER_ORGANIZATION_ID", nil),
 			},
-			"account_id": &schema.Schema{
+			"account_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("CLOUDRANGER_ACCOUNT_ID", nil),
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"timezone_location": &schema.Schema{
+			"timezone_location": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"active": &schema.Schema{
+			"active": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  true,
 			},
-			"type": &schema.Schema{
+			"type": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "server",
 			},
-			"schedule": &schema.Schema{
+			"schedule": {
 				Type:     schema.TypeList,
 				MaxItems: 1,
 				Required: true,
@@ -68,21 +69,21 @@ func resourceCloudRangerSchedule() *schema.Resource {
 					},
 				},
 			},
-			"match_all_tags": &schema.Schema{
+			"match_all_tags": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  false,
 			},
-			"tags": &schema.Schema{
+			"tags": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key": &schema.Schema{
+						"key": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"value": &schema.Schema{
+						"value": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
@@ -99,15 +100,15 @@ func scheduleElem() *schema.Schema {
 		Optional: true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"start": &schema.Schema{
+				"start": {
 					Type:     schema.TypeInt,
 					Required: true,
 				},
-				"end": &schema.Schema{
+				"end": {
 					Type:     schema.TypeInt,
 					Required: true,
 				},
-				"action_type": &schema.Schema{
+				"action_type": {
 					Type:     schema.TypeString,
 					Optional: true,
 					Default:  "Start-Stop",
@@ -117,22 +118,22 @@ func scheduleElem() *schema.Schema {
 	}
 }
 
-func resourceCloudrangerScheduleCreate(d *schema.ResourceData, m interface{}) error {
+func resourceCloudrangerScheduleCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	cli := m.(*cr.APIClient)
 
 	schedule, err := buildSchedule(d)
 	if err != nil {
-		return fmt.Errorf("error creating schedule: %s", err.Error())
+		return diag.Errorf("error creating schedule: %s", err.Error())
 	}
 
 	createdSchedule, _, err := cli.SchedulesApi.OrganizationsOrganizationIdAccountsAccountIdSchedulesPost(
-		context.Background(),
+		ctx,
 		schedule.AccountId,
 		schedule.OrganizationId,
 		*schedule,
 	)
 	if err != nil {
-		return fmt.Errorf("error creating schedule: %s", err.Error())
+		return diag.Errorf("error creating schedule: %s", err.Error())
 	}
 
 	log.Printf("[Debug] created schedule: %v", createdSchedule)
