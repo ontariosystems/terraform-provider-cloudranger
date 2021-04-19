@@ -8,3 +8,5 @@ require (
 	golang.org/x/net v0.0.0-20210415231046-e915ea6b2b7d
 	golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78
 )
+
+replace github.com/jaxi/terraform-provider-cloudranger => github.com/ontariosystems/terraform-provider-cloudranger v1.0.2-0.20210419193140-188de7c8975d
